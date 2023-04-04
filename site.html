@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>DarlingEvil Indoor Air Quality Monitor</title>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="/site.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+  </head>
+  <body>  
+     <header class="monitor-header">
+     &nbsp;&nbsp;
+     <img src="/logo.png" class="monitor-logo" alt="logo" />
+     <p class="monitor-p">
+       &nbsp;Indoor Air Quality Monitor, from&nbsp;
+       <a class="monitor-a" href="https://darlingevil.com" target="_blank" rel="noopener noreferrer">
+         darlingevil.com
+       </a>
+       &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; 
+     </p>
+   </header>
+    <canvas id="d_canvas" width="640" height="90"></canvas>
+    <div class="indent" id="d_body"></div>
+    <script>
+      function refresh(d_canvas, d_body) {
+        (async function startRefresh() {
+          try {
+            const response = await fetch("/jsonhtml");
+            // Block to get the JSON response
+            const j = await response.json();
+            // Populate the body div with the new data
+            d_body.innerHTML = j.body;
+            // Fit canvas to window and draw the canvas with the new color and new AQI
+            d_canvas.width = window.innerWidth;
+            var ctx = d_canvas.getContext("2d");
+            ctx.fillStyle = j.color;
+            ctx.fillRect(0, 0, d_canvas.width, 100);
+            ctx.fillStyle = "black";
+            ctx.font = "40px Arial Bold";
+            x = d_canvas.width / 2;
+            ctx.textAlign = 'center';
+            ctx.fillText('AQI = ' + j.aqi, x, 60);
+          }
+          catch(err) {
+            d_body.innerHTML = '&nbsp;(server offline: ' + err + ')';
+          }
+          setTimeout(startRefresh, 1000);
+        })();
+      }
+      window.onload = function() {
+        // Need to pass these DOM items into the function (can't get them inside)
+        var d_canvas = document.getElementById("d_canvas");
+        var d_body = document.getElementById("d_body");
+        // Kick off the refresh cycle once (it keeps going once started)
+        refresh(d_canvas, d_body);
+      }
+    </script>
+  </body>
+</html>
